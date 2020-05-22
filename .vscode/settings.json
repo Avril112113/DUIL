@@ -1,0 +1,10 @@
+{
+    "Lua.workspace.library": {
+        "..\\. LoveApiEmmyLua": true
+    },
+    "Lua.runtime.version": "LuaJIT",
+    "Lua.workspace.preloadFileSize": 200,
+    "Lua.workspace.ignoreDir": [
+        ".vscode"
+    ]
+}
