@@ -24,4 +24,13 @@ collapseable:setConstraints(Constraints.UiConstraints.new(
 ))
 collapseable:setText("Testing collapseable text...")
 
+local testImg = DUIL.objects.Image:new("testImg")
+collapseable:addContent(testImg)
+testImg:setConstraints(Constraints.UiConstraints.new(
+	Constraints.Zero,
+	Constraints.Zero,
+	Constraints.TargetMod.new("parent", Constraints.Percent.new(1)),
+	Constraints.TargetMod.new("parent", Constraints.Percent.new(1))
+))
+
 return mainPanel

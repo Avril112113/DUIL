@@ -1,4 +1,5 @@
 -- WORK IN PROGRESS
+-- TODO: make object smaller in height when collapsed
 
 local DUIL = require "DUIL"
 require "DUIL.objects.objectContent"
@@ -9,7 +10,8 @@ local Constraints = DUIL.Constraints
 local Collapseable = setmetatable({
 	type="Collapseable",
 	font=love.graphics.getFont(),
-	buttonSize=16
+	buttonSize=16,
+	collapsed=false
 }, DUIL.Object)
 Collapseable.__index = Collapseable
 Collapseable.__tostring = DUIL.Object.__tostring
@@ -54,9 +56,15 @@ function Collapseable.new(objectClass, name)
 
 		DUIL.Object.draw(buttonObject, depth)
 	end
+	self.collapseButton:addComponent(DUIL.components.Clicked.new(function()
+		self:toggle()
+	end))
 
+	-- contentObject will probably be a list or something
 	self.contentObject = DUIL.objects.ObjectContent:new()
 	self.contentObject:setParent(self)
+	local contentShownConstraints = Constraints.TargetMod.new("parent", Constraints.Percent.new(1)) - Constraints.ObjectRawY
+	local contentClosedConstraints = Constraints.Pixel.new(3)
 	self.contentObject:setConstraints(Constraints.UiConstraints.new(
 		Constraints.Zero,
 		Constraints.TargetMod.new(self.barObject, Constraints.ObjectY + Constraints.ObjectHeight),
@@ -72,6 +80,11 @@ function Collapseable:draw(depth)
 	love.graphics.rectangle("fill", 0, 0, self:getWidth(), self:getHeight())
 
 	DUIL.Object.draw(self, depth)
+end
+
+function Collapseable:toggle()
+	self.collapsed = not self.collapsed
+	self.contentObject.hidden = self.collapsed
 end
 
 ---@param object DUIL_Object

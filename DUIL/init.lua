@@ -88,14 +88,15 @@ DUIL.Object = Object
 
 --- NOTE: you can call this eg; `DUIL.objects.Panel:new()`
 function Object.new(objectClass, name)
-	assert(type(objectClass) == "table")
+	assert(type(objectClass) == "table", "Invalid object class, are you using `.` instead of `:`?")
 	return setmetatable({
 		children={},
 		components={},
 		colors={},
 		drivers={},
 		name=name,
-		previousBounds=nil
+		previousBounds=nil,
+		hidden=false
 	}, objectClass)
 end
 
@@ -187,6 +188,14 @@ function Object:removeComponent(component)
 	component:removed(self)
 end
 
+function Object:show()
+	self.hidden = false
+end
+
+function Object:hide()
+	self.hidden = true
+end
+
 ---@param driver any
 function Object:addDriver(driver)
 	assert(driver.type ~= nil, "Drivers must have a type field")
@@ -260,16 +269,18 @@ function Object:draw(depth)
 	depth = depth or 1
 	-- cb = Content Bounds
 	for _, child in pairs(self.children) do
-		local objx, objy = child:getX(), child:getY()
-		if DUIL.useStencilTest then
-			love.graphics.stencil(function()
-				love.graphics.rectangle("fill", 0, 0, self:getWidth(), self.getHeight())
-			end, "replace", depth, true)
-			love.graphics.setStencilTest("gequal", depth)
+		if child.hidden ~= true then
+			local objx, objy = child:getX(), child:getY()
+			if DUIL.useStencilTest then
+				love.graphics.stencil(function()
+					love.graphics.rectangle("fill", 0, 0, self:getWidth(), self.getHeight())
+				end, "replace", depth, true)
+				love.graphics.setStencilTest("gequal", depth)
+			end
+			love.graphics.translate(objx, objy)
+			child:draw(depth+1)
+			love.graphics.translate(-objx, -objy)
 		end
-		love.graphics.translate(objx, objy)
-		child:draw(depth+1)
-		love.graphics.translate(-objx, -objy)
 	end
 	if depth == 1 and DUIL.useStencilTest then
 		love.graphics.setStencilTest()
@@ -295,10 +306,12 @@ function Object:mousemoved(x, y, dx, dy, istouch)
 		component:mousemoved(self, x, y, dx, dy, istouch)
 	end
 	for _, child in pairs(self.children) do
-		local objx, objy, objw, objh = child:getX(), child:getY(), child:getWidth(), child:getHeight()
-		if Utils.IsInside(objx - dx, objy - dy, objx + objw + dx, objy + objh + dy, x, y) then
-			-- TODO: additional arguemnt to spesify if the mouse was moved outside and is no longer within the child
-			child:mousemoved(x-objx, y-objy, dx, dy, istouch)
+		if child.hidden ~= true then
+			local objx, objy, objw, objh = child:getX(), child:getY(), child:getWidth(), child:getHeight()
+			if Utils.IsInside(objx - dx, objy - dy, objx + objw + dx, objy + objh + dy, x, y) then
+				-- TODO: additional arguemnt to spesify if the mouse was moved outside and is no longer within the child
+				child:mousemoved(x-objx, y-objy, dx, dy, istouch)
+			end
 		end
 	end
 end
@@ -307,9 +320,11 @@ function Object:mousepressed(x, y, button)
 		component:mousepressed(self, x, y, button)
 	end
 	for _, child in pairs(self.children) do
-		local objx, objy, objw, objh = child:getX(), child:getY(), child:getWidth(), child:getHeight()
-		if Utils.IsInside(objx, objy, objx + objw, objy + objh, x, y) then
-			child:mousepressed(x-objx, y-objy, button)
+		if child.hidden ~= true then
+			local objx, objy, objw, objh = child:getX(), child:getY(), child:getWidth(), child:getHeight()
+			if Utils.IsInside(objx, objy, objx + objw, objy + objh, x, y) then
+				child:mousepressed(x-objx, y-objy, button)
+			end
 		end
 	end
 end
@@ -318,9 +333,11 @@ function Object:mousereleased(x, y, button)
 		component:mousereleased(self, x, y, button)
 	end
 	for _, child in pairs(self.children) do
-		local objx, objy, objw, objh = child:getX(), child:getY(), child:getWidth(), child:getHeight()
-		if Utils.IsInside(objx, objy, objx + objw, objy + objh, x, y) then
-			child:mousereleased(x-objx, y-objy, button)
+		if child.hidden ~= true then
+			local objx, objy, objw, objh = child:getX(), child:getY(), child:getWidth(), child:getHeight()
+			if Utils.IsInside(objx, objy, objx + objw, objy + objh, x, y) then
+				child:mousereleased(x-objx, y-objy, button)
+			end
 		end
 	end
 end
@@ -330,7 +347,9 @@ function Object:keypressed(key, isrepeat)
 	end
 	-- TODO: check if child has focus
 	for _, child in pairs(self.children) do
-		child:keypressed(key, isrepeat)
+		if child.hidden ~= true then
+			child:keypressed(key, isrepeat)
+		end
 	end
 end
 function Object:keyreleased(key)
@@ -339,7 +358,9 @@ function Object:keyreleased(key)
 	end
 	-- TODO: check if child has focus
 	for _, child in pairs(self.children) do
-		child:keyreleased(key)
+		if child.hidden ~= true then
+			child:keyreleased(key)
+		end
 	end
 end
 function Object:boundsChanged(posChanged, sizeChanged)
