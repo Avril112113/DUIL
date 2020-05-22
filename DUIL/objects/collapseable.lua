@@ -8,7 +8,8 @@ local Constraints = DUIL.Constraints
 ---@class DUIL_CollapseableObject
 local Collapseable = setmetatable({
 	type="Collapseable",
-	font=love.graphics.getFont()
+	font=love.graphics.getFont(),
+	buttonSize=16
 }, DUIL.Object)
 Collapseable.__index = Collapseable
 Collapseable.__tostring = DUIL.Object.__tostring
@@ -29,32 +30,30 @@ function Collapseable.new(objectClass, name)
 		end)
 	))
 
-
 	self.textObject = DUIL.objects.Text:new("collapseableText")
 	self.barObject:addContent(self.textObject)
 	self.textObject:setConstraints(Constraints.UiConstraints.new(
 		self.barObject.contentObjectConstraints.x,
 		Constraints.Zero,
-		Constraints.TargetMod.new("parent", Constraints.Percent.new(1)) - Constraints.Get.new(function() return self.collapseButton:getWidth() end),
-		Constraints.Pixel.new(12)
+		Constraints.TargetMod.new("parent", Constraints.Percent.new(1)) - Constraints.Get.new(function() return 3 + self.collapseButton:getWidth() end),
+		Constraints.Get.new(function() return self.buttonSize end)
 	))
 
-	-- self.collapseButton = DUIL.Object:new("collapseButton")
-	-- self.collapseButton:setParent(self)
-	-- self.collapseButton:setConstraints(Constraints.UiConstraints.new(
-	-- 	Constraints.TargetMod.new("parent", Constraints.ObjectWidth) - Constraints.ObjectWidth,
-	-- 	Constraints.TargetMod.new("parent", Constraints.ObjectHeight/2) - Constraints.ObjectHeight,
-	-- 	Constraints.Get.new(function() return self.textObject:getHeight() end),
-	-- 	Constraints.Get.new(function() return self.textObject:getHeight() end)
-	-- ))
-	-- function self.collapseButton.draw(buttonObject, depth)
-	-- 	love.graphics.setLineWidth(3)
-	-- 	buttonObject:applyColor("controlButtonColor")
-	-- 	-- buttonObject:getSkin():draw("cross", self, self:getWidth() - self.textObject:getHeight() - 4, 4, self.textObject:getHeight() - 4, self.textObject:getHeight() - 4)
-	-- 	buttonObject:getSkin():draw("cross", self, 0, 0, self:getWidth(), self:getHeight())
+	self.collapseButton = DUIL.Object:new("collapseButton")
+	self.barObject:addContent(self.collapseButton)
+	self.collapseButton:setConstraints(Constraints.UiConstraints.new(
+		Constraints.TargetMod.new("parent", Constraints.ObjectWidth) - Constraints.ObjectWidth,
+		Constraints.TargetMod.new("parent", Constraints.ObjectHeight/2) - Constraints.ObjectHeight/2,
+		Constraints.Get.new(function() return self.buttonSize end),
+		Constraints.Get.new(function() return self.buttonSize end)
+	))
+	function self.collapseButton.draw(buttonObject, depth)
+		love.graphics.setLineWidth(3)
+		buttonObject:applyColor("controlButtonColor")
+		buttonObject:getSkin():draw("cross", buttonObject, 0, 0, buttonObject:getWidth(), buttonObject:getHeight())
 
-	-- 	DUIL.Object.draw(self, depth)
-	-- end
+		DUIL.Object.draw(buttonObject, depth)
+	end
 
 	self.contentObject = DUIL.objects.ObjectContent:new()
 	self.contentObject:setParent(self)
