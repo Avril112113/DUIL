@@ -18,7 +18,7 @@ local light = setmetatable({
 			assert(type(h) == "number", "h is not a number")
 			local lw = love.graphics.getLineWidth()
 			local off = lw/2-1
-			x, y = x - off, y - off
+			x, y = x + off, y + off
 			w, h = w - off*2, h - off*2
 			love.graphics.line(x, y, x+w, y+h)
 			love.graphics.line(x+w, y, x, y+h)
