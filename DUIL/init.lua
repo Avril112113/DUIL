@@ -523,17 +523,19 @@ function DUIL.register(object)
 end
 
 ---@type DUIL_Object
-function DUIL.getObjectAt(root, x, y)
+function DUIL.getObjectAt(root, x, y, ignoreHidden)
 	local prevObject
 	local currentObject = root
 	while currentObject ~= prevObject and currentObject.children ~= nil and currentObject:getChildCount() > 0 do
 		prevObject = currentObject
 		for _, child in pairs(currentObject.children) do
-			local objx, objy, objw, objh = child:getX(), child:getY(), child:getWidth(), child:getHeight()
-			if Utils.IsInside(objx, objy, objx + objw, objy + objh, x, y) then
-				x, y = x - objx, y - objy
-				currentObject = child
-				break
+			if child.hidden == true and ignoreHidden == true or child.hidden == false then
+				local objx, objy, objw, objh = child:getX(), child:getY(), child:getWidth(), child:getHeight()
+				if Utils.IsInside(objx, objy, objx + objw, objy + objh, x, y) then
+					x, y = x - objx, y - objy
+					currentObject = child
+					break
+				end
 			end
 		end
 	end
