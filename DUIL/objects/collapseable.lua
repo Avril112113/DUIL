@@ -1,6 +1,3 @@
--- WORK IN PROGRESS
--- TODO: make object smaller in height when collapsed
-
 local DUIL = require "DUIL"
 require "DUIL.objects.objectContent"
 
@@ -60,11 +57,9 @@ function Collapseable.new(objectClass, name)
 		self:toggle()
 	end))
 
-	-- contentObject will probably be a list or something
+	-- TODO: contentObject will probably be a list or something
 	self.contentObject = DUIL.objects.ObjectContent:new()
 	self.contentObject:setParent(self)
-	local contentShownConstraints = Constraints.TargetMod.new("parent", Constraints.Percent.new(1)) - Constraints.ObjectRawY
-	local contentClosedConstraints = Constraints.Pixel.new(3)
 	self.contentObject:setConstraints(Constraints.UiConstraints.new(
 		Constraints.Zero,
 		Constraints.TargetMod.new(self.barObject, Constraints.ObjectY + Constraints.ObjectHeight),
@@ -85,6 +80,14 @@ end
 function Collapseable:toggle()
 	self.collapsed = not self.collapsed
 	self.contentObject.hidden = self.collapsed
+end
+
+function Collapseable:getHeight()
+	if self.collapsed then
+		return self.barObject:getHeight() + 3
+	else
+		return DUIL.Object.getHeight(self)
+	end
 end
 
 ---@param object DUIL_Object
